@@ -1,4 +1,4 @@
-let audioContext, originalBlob, originalBuffer, reversedBuffer, audioPlaying = false;
+let mediaRecorder, audioContext, originalBlob, originalBuffer, reversedBuffer, audioPlaying = false;
 
 const recordBtn = document.querySelector("#recordBtn"),
   recordTxt = document.querySelector("#recordText"),
@@ -11,7 +11,6 @@ const recordBtn = document.querySelector("#recordBtn"),
 
 // 录音功能
 recordBtn.addEventListener("click", async () => {
-  let mediaRecorder;
   if (recordTxt.textContent === "开始录音") {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
