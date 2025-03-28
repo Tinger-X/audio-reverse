@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音频反转器</title>
+  <meta name="keywords" content="音频反转">
+  <meta name="description" content="在线音频反转,增进友情小工具">
+  <link rel="stylesheet" href="style.css">
+  <link rel="shortcut icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+  <div class="container">
+    <div class="box">
+      <h1>🎵 音频反转器</h1>
+
+      <div class="file-upload">
+        <input type="file" id="audioUpload" accept="audio/*" />
+        <label for="audioUpload">
+          <span class="icon">📁</span>
+          点击上传音频文件（或拖放至此）
+        </label>
+      </div>
+
+      <div id="status">🚀 准备就绪</div>
+    </div>
+
+    <div class="box">
+      <div class="button-group">
+        <button id="playRawBtn" disabled>▶️ 播放原始音频</button>
+        <button id="playRevBtn" disabled>▶️ 播放倒转音频</button>
+      </div>
+
+      <div class="button-group">
+        <button id="downloadRawBtn" disabled>⬇️ 下载原始音频</button>
+        <button id="downloadRevBtn" disabled>⬇️ 下载倒转音频</button>
+      </div>
+
+      <button id="recordBtn">
+        <span class="icon">🎙️</span>
+        <span id="recordText">开始录音</span>
+      </button>
+    </div>
+  </div>
+</body>
+
+</html>
+<script src="script.js"></script>
