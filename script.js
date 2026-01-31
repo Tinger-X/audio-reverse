@@ -16,7 +16,7 @@ recordBtn.addEventListener("click", async () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
 
-      let = audioChunks = [];
+      let audioChunks = [];
       mediaRecorder.ondataavailable = (e) => {
         audioChunks.push(e.data);
       };
@@ -39,7 +39,7 @@ recordBtn.addEventListener("click", async () => {
     }
   } else {
     mediaRecorder.stop();
-    recordBtn.textContent = "开始录音";
+    recordTxt.textContent = "开始录音";
     statusDiv.textContent = "🪄 处理音频中...";
   }
 });
