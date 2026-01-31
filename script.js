@@ -7,7 +7,8 @@ const recordBtn = document.querySelector("#recordBtn"),
   downloadRawBtn = document.querySelector("#downloadRawBtn"),
   downloadRevBtn = document.querySelector("#downloadRevBtn"),
   audioUpload = document.querySelector("#audioUpload"),
-  statusDiv = document.querySelector("#status");
+  statusDiv = document.querySelector("#status"),
+  clearBtn = document.querySelector("#clearBtn");
 
 // 录音功能
 recordBtn.addEventListener("click", async () => {
@@ -28,6 +29,7 @@ recordBtn.addEventListener("click", async () => {
 
       mediaRecorder.start();
       recordTxt.textContent = "停止录音";
+      recordBtn.classList.add("active");
       playRawBtn.disabled = true;
       playRevBtn.disabled = true;
       downloadRawBtn.disabled = true;
@@ -39,6 +41,7 @@ recordBtn.addEventListener("click", async () => {
     }
   } else {
     mediaRecorder.stop();
+    recordBtn.classList.remove("active");
     recordTxt.textContent = "开始录音";
     statusDiv.textContent = "🪄 处理音频中...";
   }
@@ -60,6 +63,7 @@ async function processAudio(blob) {
     downloadRevBtn.disabled = false;
     playRawBtn.disabled = false;
     playRevBtn.disabled = false;
+    clearBtn.style.display = "block";
     statusDiv.textContent = `💯 就绪：${originalBuffer.duration.toFixed(2)} 秒音频`;
   } catch (err) {
     statusDiv.textContent = "😵‍💫 音频处理失败";
@@ -156,6 +160,20 @@ playRevBtn.addEventListener("click", () => {
     audioPlaying = false;
     statusDiv.textContent = "✅️ 反转音频播放完成";
   };
+});
+
+// 清除音频功能
+clearBtn.addEventListener("click", () => {
+  originalBlob = null;
+  originalBuffer = null;
+  reversedBuffer = null;
+  audioUpload.value = "";
+  playRawBtn.disabled = true;
+  playRevBtn.disabled = true;
+  downloadRawBtn.disabled = true;
+  downloadRevBtn.disabled = true;
+  clearBtn.style.display = "none";
+  statusDiv.textContent = "🚀 准备就绪";
 });
 
 // 工具函数：保存文件
