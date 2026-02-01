@@ -155,6 +155,8 @@ function clearPlay() {
   audioSource.stop();
   audioSource = null;
   audioType = null;
+  playRawBtn.textContent = "▶️ 播放原始音频";
+  playRevBtn.textContent = "▶️ 播放反转音频";
 }
 
 // 播放功能
@@ -167,20 +169,16 @@ playRawBtn.addEventListener("click", () => {
     clearPlay();
 
     if (type === "raw") {
-      // 播放的是原始音频，仅更新UI
-      playRawBtn.textContent = "▶️ 播放原始音频";
+      // 播放的是原始音频，更新UI后返回，不播放音频
       statusDiv.textContent = "⏸️ 原始音频已暂停";
       return;
     }
-    // 播放的是反转音频，先更新playRevBtn UI，再进入没有音频播放流程
-    playRevBtn.textContent = "▶️ 播放反转音频";
   }
-  // 没有音频正在播放（真没有或已暂停），更新UI并播放原始音频
+  // 没有音频正在播放（或已暂停播放反转音频），更新UI并播放原始音频
   playRawBtn.textContent = "⏸️ 暂停音频播放";
   statusDiv.textContent = "🎧️ 原始音频播放中...";
   playAudio(originalBuffer, "raw", () => {
     clearPlay();
-    playRawBtn.textContent = "▶️ 播放原始音频";
     statusDiv.textContent = "✅️ 原始音频播放完成";
   });
 });
@@ -194,19 +192,15 @@ playRevBtn.addEventListener("click", () => {
 
     if (type === "rev") {
       // 播放的是倒转音频，仅更新UI
-      playRevBtn.textContent = "▶️ 播放倒转音频";
       statusDiv.textContent = "⏸️ 倒转音频已暂停";
       return;
     }
-    // 播放的是原始音频，先更新playRawBtn UI，再进入没有音频播放流程
-    playRawBtn.textContent = "▶️ 播放原始音频";
   }
-  // 没有音频正在播放（真没有或已暂停），更新UI并播放倒转音频
+  // 没有音频正在播放（或已暂停播放原始音频），更新UI并播放倒转音频
   playRevBtn.textContent = "⏸️ 暂停音频播放";
   statusDiv.textContent = "🎧️ 倒转音频播放中...";
   playAudio(reversedBuffer, "rev", () => {
     clearPlay();
-    playRevBtn.textContent = "▶️ 播放倒转音频";
     statusDiv.textContent = "✅️ 倒转音频播放完成";
   });
 });

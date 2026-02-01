@@ -139,10 +139,18 @@ button#recordBtn>.icon {
 }
 
 button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(74, 144, 226, 0.3);
 }
 
 .hide {
   display: none !important;
+}
+
+
+.hash {
+  font-size: 0.8rem;
+  color: #acacac;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
 }
