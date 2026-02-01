@@ -1,7 +1,15 @@
-let mediaRecorder, audioContext, originalBlob, originalBuffer, reversedBuffer, audioPlaying = false;
+let mediaRecorder,
+  audioContext,
+  originalBlob,
+  originalBuffer,
+  reversedBuffer,
+  audioRecording = false,
+  audioSource = null,
+  audioType = null;
 
 const recordBtn = document.querySelector("#recordBtn"),
   recordTxt = document.querySelector("#recordText"),
+  buttonGroup = document.querySelector("#buttonGroup"),
   playRawBtn = document.querySelector("#playRawBtn"),
   playRevBtn = document.querySelector("#playRevBtn"),
   downloadRawBtn = document.querySelector("#downloadRawBtn"),
@@ -12,38 +20,37 @@ const recordBtn = document.querySelector("#recordBtn"),
 
 // 录音功能
 recordBtn.addEventListener("click", async () => {
-  if (recordTxt.textContent === "开始录音") {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-
-      let audioChunks = [];
-      mediaRecorder.ondataavailable = (e) => {
-        audioChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        originalBlob = new Blob(audioChunks, { type: "audio/webm" });
-        await processAudio(originalBlob);
-      };
-
-      mediaRecorder.start();
-      recordTxt.textContent = "停止录音";
-      recordBtn.classList.add("active");
-      playRawBtn.disabled = true;
-      playRevBtn.disabled = true;
-      downloadRawBtn.disabled = true;
-      downloadRevBtn.disabled = true;
-      statusDiv.textContent = "🎶 录音中...";
-    } catch (err) {
-      statusDiv.textContent = "🚫 无法访问麦克风";
-      console.log(err);
-    }
-  } else {
+  if (audioRecording) {
+    // 录音完成
     mediaRecorder.stop();
     recordBtn.classList.remove("active");
     recordTxt.textContent = "开始录音";
     statusDiv.textContent = "🪄 处理音频中...";
+    audioRecording = false;
+    return;
+  }
+  // 开始录音
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    let audioChunks = [];
+    mediaRecorder.ondataavailable = (e) => {
+      audioChunks.push(e.data);
+    };
+    mediaRecorder.onstop = async () => {
+      originalBlob = new Blob(audioChunks, { type: "audio/webm" });
+      await processAudio(originalBlob);
+    };
+
+    mediaRecorder.start();
+    audioRecording = true;
+    recordTxt.textContent = "停止录音";
+    recordBtn.classList.add("active");
+    buttonGroup.classList.add("hide");
+    statusDiv.textContent = "🎶 正在录音...";
+  } catch (err) {
+    statusDiv.textContent = "🚫 无法访问麦克风";
+    console.log(err);
   }
 });
 
@@ -51,19 +58,14 @@ recordBtn.addEventListener("click", async () => {
 async function processAudio(blob) {
   try {
     const arrayBuffer = await blob.arrayBuffer();
-
     if (!audioContext) {
       audioContext = new AudioContext();
     }
-
     originalBuffer = await audioContext.decodeAudioData(arrayBuffer);
     reversedBuffer = reverseAudio(originalBuffer);
 
-    downloadRawBtn.disabled = false;
-    downloadRevBtn.disabled = false;
-    playRawBtn.disabled = false;
-    playRevBtn.disabled = false;
-    clearBtn.style.display = "block";
+    buttonGroup.classList.remove("hide");
+    clearBtn.classList.remove("hide");
     statusDiv.textContent = `💯 就绪：${originalBuffer.duration.toFixed(2)} 秒音频`;
   } catch (err) {
     statusDiv.textContent = "😵‍💫 音频处理失败";
@@ -107,10 +109,12 @@ function pad(timeEl, total = 2, str = "0") {
 
 // 下载功能
 downloadRawBtn.addEventListener("click", () => {
+  if (!originalBlob) return;
   saveAs(originalBlob, `raw-${formatTime(new Date())}.wav`);
 });
 
 downloadRevBtn.addEventListener("click", () => {
+  if (!reversedBuffer) return;
   const wavBlob = audioBufferToWav(reversedBuffer);
   saveAs(wavBlob, `rev-${formatTime(new Date())}.wav`);
 });
@@ -130,36 +134,77 @@ audioUpload.addEventListener("change", async (e) => {
   }
 });
 
+function playAudio(buffer, type, callBack) {
+  if (!audioContext) {
+    audioContext = new AudioContext();
+  }
+  const source = audioContext.createBufferSource();
+  source.buffer = buffer;
+  source.onended = callBack;
+  source.connect(audioContext.destination);
+  source.start();
+  audioSource = source;
+  audioType = type;
+}
+
 // 播放功能
 playRawBtn.addEventListener("click", () => {
-  if (!originalBuffer || audioPlaying) return;
+  if (!originalBuffer) return;
 
-  const source = audioContext.createBufferSource();
-  source.buffer = originalBuffer;
-  source.connect(audioContext.destination);
-  source.start();
+  if (audioSource) {
+    // 有音频正在播放，先暂停并清除事件
+    audioSource.onended = null;
+    audioSource.stop();
 
-  audioPlaying = true;
-  statusDiv.textContent = "🎧️ 原音频播放中...";
-  source.onended = () => {
-    audioPlaying = false;
-    statusDiv.textContent = "✅️ 原音频播放完成";
-  };
+    if (audioType === "raw") {
+      // 播放的是原始音频，仅更新UI
+      playRawBtn.textContent = "▶️ 播放原始音频";
+      statusDiv.textContent = "⏸️ 原始音频已暂停";
+      audioSource = null;
+      audioType = null;
+      return;
+    }
+    // 播放的是反转音频，先更新playRevBtn UI，再进入没有音频播放流程
+    playRevBtn.textContent = "▶️ 播放反转音频";
+  }
+  // 没有音频正在播放（真没有或已暂停），更新UI并播放原始音频
+  playRawBtn.textContent = "⏸️ 暂停音频播放";
+  statusDiv.textContent = "🎧️ 原始音频播放中...";
+  playAudio(originalBuffer, "raw", () => {
+    audioSource = null;
+    audioType = null;
+    playRawBtn.textContent = "▶️ 播放原始音频";
+    statusDiv.textContent = "✅️ 原始音频播放完成";
+  });
 });
 playRevBtn.addEventListener("click", () => {
-  if (!reversedBuffer || audioPlaying) return;
+  if (!reversedBuffer) return;
 
-  const source = audioContext.createBufferSource();
-  source.buffer = reversedBuffer;
-  source.connect(audioContext.destination);
-  source.start();
+  if (audioSource) {
+    // 有音频正在播放，先暂停并清除事件
+    audioSource.onended = null;
+    audioSource.stop();
 
-  audioPlaying = true;
-  statusDiv.textContent = "🎧️ 反转音频播放中...";
-  source.onended = () => {
-    audioPlaying = false;
-    statusDiv.textContent = "✅️ 反转音频播放完成";
-  };
+    if (audioType === "rev") {
+      // 播放的是倒转音频，仅更新UI
+      playRevBtn.textContent = "▶️ 播放倒转音频";
+      statusDiv.textContent = "⏸️ 倒转音频已暂停";
+      audioSource = null;
+      audioType = null;
+      return;
+    }
+    // 播放的是原始音频，先更新playRawBtn UI，再进入没有音频播放流程
+    playRawBtn.textContent = "▶️ 播放原始音频";
+  }
+  // 没有音频正在播放（真没有或已暂停），更新UI并播放倒转音频
+  playRevBtn.textContent = "⏸️ 暂停音频播放";
+  statusDiv.textContent = "🎧️ 倒转音频播放中...";
+  playAudio(reversedBuffer, "rev", () => {
+    audioSource = null;
+    audioType = null;
+    playRevBtn.textContent = "▶️ 播放倒转音频";
+    statusDiv.textContent = "✅️ 倒转音频播放完成";
+  });
 });
 
 // 清除音频功能
@@ -167,12 +212,18 @@ clearBtn.addEventListener("click", () => {
   originalBlob = null;
   originalBuffer = null;
   reversedBuffer = null;
+  audioRecording = false;
+  if (audioSource) {
+    // 有音频正在播放，先暂停并清除事件
+    audioSource.onended = null;
+    audioSource.stop();
+  }
+  audioSource = null;
+  audioType = "raw";
+
   audioUpload.value = "";
-  playRawBtn.disabled = true;
-  playRevBtn.disabled = true;
-  downloadRawBtn.disabled = true;
-  downloadRevBtn.disabled = true;
-  clearBtn.style.display = "none";
+  buttonGroup.classList.add("hide");
+  clearBtn.classList.add("hide");
   statusDiv.textContent = "🚀 准备就绪";
 });
 

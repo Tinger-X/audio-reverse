@@ -20,23 +20,20 @@
         <input type="file" id="audioUpload" accept="audio/*" />
         <label for="audioUpload">
           <span class="icon">📁</span>
-          点击上传音频文件（或拖放至此）
+          点击上传音频文件
         </label>
       </div>
 
       <div id="status">🚀 准备就绪</div>
-      <button id="clearBtn" class="clear-btn">🗑️ 清除音频</button>
+      <button id="clearBtn" class="hide">🗑️ 清除音频</button>
     </div>
 
     <div class="box">
-      <div class="button-group">
-        <button id="playRawBtn" disabled>▶️ 播放原始音频</button>
-        <button id="playRevBtn" disabled>▶️ 播放倒转音频</button>
-      </div>
-
-      <div class="button-group">
-        <button id="downloadRawBtn" disabled>⬇️ 下载原始音频</button>
-        <button id="downloadRevBtn" disabled>⬇️ 下载倒转音频</button>
+      <div id="buttonGroup" class="hide">
+        <button id="playRawBtn">▶️ 播放原始音频</button>
+        <button id="playRevBtn">▶️ 播放倒转音频</button>
+        <button id="downloadRawBtn">⬇️ 下载原始音频</button>
+        <button id="downloadRevBtn">⬇️ 下载倒转音频</button>
       </div>
 
       <button id="recordBtn">
