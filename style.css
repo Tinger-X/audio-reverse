@@ -150,7 +150,7 @@ button:hover {
 .hash {
   font-size: 0.8rem;
   color: #acacac;
-  position: absolute;
+  position: fixed;
   bottom: 5px;
   right: 5px;
 }
