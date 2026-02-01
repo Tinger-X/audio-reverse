@@ -29,7 +29,8 @@ recordBtn.addEventListener("click", async () => {
     audioRecording = false;
     return;
   }
-  // 开始录音
+  // 开始录音，先停止正在播放的音频
+  clearPlay();
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
@@ -147,21 +148,28 @@ function playAudio(buffer, type, callBack) {
   audioType = type;
 }
 
+function clearPlay() {
+  if (audioSource === null) return;
+  console.log("clearPlay", audioType);
+  audioSource.onended = null;
+  audioSource.stop();
+  audioSource = null;
+  audioType = null;
+}
+
 // 播放功能
 playRawBtn.addEventListener("click", () => {
   if (!originalBuffer) return;
 
   if (audioSource) {
     // 有音频正在播放，先暂停并清除事件
-    audioSource.onended = null;
-    audioSource.stop();
+    const type = audioType;
+    clearPlay();
 
-    if (audioType === "raw") {
+    if (type === "raw") {
       // 播放的是原始音频，仅更新UI
       playRawBtn.textContent = "▶️ 播放原始音频";
       statusDiv.textContent = "⏸️ 原始音频已暂停";
-      audioSource = null;
-      audioType = null;
       return;
     }
     // 播放的是反转音频，先更新playRevBtn UI，再进入没有音频播放流程
@@ -171,8 +179,7 @@ playRawBtn.addEventListener("click", () => {
   playRawBtn.textContent = "⏸️ 暂停音频播放";
   statusDiv.textContent = "🎧️ 原始音频播放中...";
   playAudio(originalBuffer, "raw", () => {
-    audioSource = null;
-    audioType = null;
+    clearPlay();
     playRawBtn.textContent = "▶️ 播放原始音频";
     statusDiv.textContent = "✅️ 原始音频播放完成";
   });
@@ -182,15 +189,13 @@ playRevBtn.addEventListener("click", () => {
 
   if (audioSource) {
     // 有音频正在播放，先暂停并清除事件
-    audioSource.onended = null;
-    audioSource.stop();
+    const type = audioType;
+    clearPlay();
 
-    if (audioType === "rev") {
+    if (type === "rev") {
       // 播放的是倒转音频，仅更新UI
       playRevBtn.textContent = "▶️ 播放倒转音频";
       statusDiv.textContent = "⏸️ 倒转音频已暂停";
-      audioSource = null;
-      audioType = null;
       return;
     }
     // 播放的是原始音频，先更新playRawBtn UI，再进入没有音频播放流程
@@ -200,8 +205,7 @@ playRevBtn.addEventListener("click", () => {
   playRevBtn.textContent = "⏸️ 暂停音频播放";
   statusDiv.textContent = "🎧️ 倒转音频播放中...";
   playAudio(reversedBuffer, "rev", () => {
-    audioSource = null;
-    audioType = null;
+    clearPlay();
     playRevBtn.textContent = "▶️ 播放倒转音频";
     statusDiv.textContent = "✅️ 倒转音频播放完成";
   });
@@ -213,13 +217,7 @@ clearBtn.addEventListener("click", () => {
   originalBuffer = null;
   reversedBuffer = null;
   audioRecording = false;
-  if (audioSource) {
-    // 有音频正在播放，先暂停并清除事件
-    audioSource.onended = null;
-    audioSource.stop();
-  }
-  audioSource = null;
-  audioType = "raw";
+  clearPlay();
 
   audioUpload.value = "";
   buttonGroup.classList.add("hide");
