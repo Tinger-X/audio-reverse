@@ -48,6 +48,7 @@ recordBtn.addEventListener("click", async () => {
     recordTxt.textContent = "停止录音";
     recordBtn.classList.add("active");
     buttonGroup.classList.add("hide");
+    clearBtn.classList.add("hide");
     statusDiv.textContent = "🎶 正在录音...";
   } catch (err) {
     statusDiv.textContent = "🚫 无法访问麦克风";
